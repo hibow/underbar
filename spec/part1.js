@@ -503,12 +503,13 @@
       it('should pass items of the array into the iterator from left to right', function() {
         var orderTraversed = [];
 
-        _.reduce([1,2,3,4], function(memo, item) {
+        var orderTraversedTotal = _.reduce([1,2,3,4], function(memo, item) {
           orderTraversed.push(item);
           return memo;
         }, 10);
-
+        
         expect(orderTraversed).to.eql([1,2,3,4]);
+        expect(orderTraversedTotal).to.eql(10);
       });
 
       it('should continue to call iterator even if the iterator returns undefined', function() {

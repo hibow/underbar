@@ -194,18 +194,17 @@
     // with acc -> run thru iterator
     var result = 0;
     _.each(collection, function(item, index){
+  //       item = collection[index];
+//      var keyArr = Object.keys(collection);
     	if (accumulator !== undefined){
            accumulator = iterator(accumulator, item);
            result = accumulator;
     	} else { 
-    	  if (iterator(accumulator, item)===accumulator){
-    		   result = collection[0];
-    		} else {
-           result = iterator(accumulator, item);
+            accumulator = item;
+            item = collection[index+1];
+            result = iterator(accumulator, item);
      	}
-     }
-
-    });
+     });
       return result;
   };
 
