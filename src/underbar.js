@@ -224,12 +224,49 @@
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
+    //if collectoin is empty length = 0 -> return defalut yes
+    var wasMatched = true;
+    var hasCallBack = true;
+    if (Object.keys(collection).length === 0){
+    	return wasMatched;
+    } else if (!arguments[1]){
+    	hasCallBack = false;
+    } 
+    //var count = 0;
+    return _.reduce(collection, function(AllMatched, item){
+    	if (!hasCallBack){
+    		return !!item && AllMatched;
+    	} else {
+  
+    		return !!iterator(item) && AllMatched;
+    	}
+    }, true);
+
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
     // TIP: There's a very clever way to re-use every() here.
+    //assume = no arg[1] return default true/empty collection -> return false;
+    // if _.every === true -> return true; -> in every if true-> stay until finish; break if false-> let it break !true -> return ! (!true) -> true
+    //if _.every === false -> if all false-> false;  always !false -> so stay until the end. and return !(!false)-> false
+    //if one false -> return true; stay when ! false ; break when ! true -> return !(!true) -> true
+
+    var wasMatched = false;
+    var hasCallBack = true;
+    if (Object.keys(collection).length === 0){
+    	return wasMatched;
+    } else if (!arguments[1]){
+    	hasCallBack = false;
+    } 
+    return !_.every(collection, function(item){
+    	if (!hasCallBack){
+    		return !item;
+    	} else {
+          return !iterator(item);
+    	}
+    });
   };
 
 
@@ -252,11 +289,36 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
+      //merge other stuff into obj
+      //arg[1] and after are obj to be merged into the arg[0]
+        if (arguments.length < 2){
+      	return obj;
+      } else if (arguments.length >=2){
+      	for (var i = 1; i< arguments.length; i++ ){
+      		var source = arguments[i];
+      		Object.assign(obj, source);
+      	}
+      	return obj;
+      }
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
+  	//it won't overwrite existing property
+  	 if (arguments.length < 2){
+      	return obj;
+      } else if (arguments.length >=2){
+      	for (var i = 1; i< arguments.length; i++ ){
+      		var source = arguments[i];
+      		for (var key in source){
+      			if (source.hasOwnProperty(key) && !obj.hasOwnProperty(key)){
+                    obj[key] = source[key];
+      			}
+      		}
+      	}
+      	return obj;
+      }
   };
 
 
@@ -277,6 +339,7 @@
     var alreadyCalled = false;
     var result;
 
+
     // TIP: We'll return a new function that delegates to the old one, but only
     // if it hasn't been called before.
     return function() {
@@ -284,8 +347,9 @@
         // TIP: .apply(this, arguments) is the standard way to pass on all of the
         // infromation from one function call to another.
         result = func.apply(this, arguments);
+      
         alreadyCalled = true;
-      }
+      } 
       // The new function always returns the originally computed result.
       return result;
     };
@@ -300,6 +364,23 @@
   // already computed the result for the given argument and return that value
   // instead if possible.
   _.memoize = function(func) {
+    var result;
+    var oncePerUniqueArgumentList = {};
+     return function() {
+     	var argument = JSON.stringify(arguments);
+       if (oncePerUniqueArgumentList.hasOwnProperty(argument)) {
+        // TIP: .apply(this, arguments) is the standard way to pass on all of the
+        // infromation from one function call to another.
+        result = oncePerUniqueArgumentList[argument];
+      } else {
+
+        result = func.apply(this, arguments);
+        oncePerUniqueArgumentList[argument] = result;
+      	}
+      // The new function always returns the originally computed result.
+      return result;
+    };
+
   };
 
   // Delays a function for the given number of milliseconds, and then calls
@@ -309,6 +390,11 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
+     //how to wait? 
+     //what is the arguments? arguments -> pass it to func and apply 
+     //return func() setTimeout()
+     return setTimeout.apply(this, arguments);
+
   };
 
 
@@ -323,6 +409,11 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
+
+    	var copyArr = array.slice(0);
+    	
+    }
+
   };
 
 
