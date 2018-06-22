@@ -121,7 +121,20 @@
   		iterator = isSorted;
   		isSorted = false;
   	}
-      for (var i = 0; i < array.length; i ++){
+  	_.each(array, function(item, index){
+  		if (iterator === undefined){
+  			if (_.indexOf(result, item) < 0){
+  				result.push(item);
+  			}
+  		} else {
+  			var computed = iterator(item, index, array);
+  			if (_.indexOf(uniqArr, computed) < 0){
+  				uniqArr.push(computed);
+  				result.push(item);
+  			}
+  		}
+  	});
+  /*    for (var i = 0; i < array.length; i ++){
       	var value = array[i];
       	if (!iterator){
       		if (_.indexOf(result, value) < 0){
@@ -134,7 +147,7 @@
         		result.push(value);
         	}
         }
-     }
+     } */
        return result;
   };
 
@@ -410,10 +423,21 @@
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
 
-    	var copyArr = array.slice(0);
-    	
-    }
-
+    	var newArr = array.slice();
+        var curIndex = array.length;
+        var randomIndex;
+        var temp;
+       // _.each(array, function(item, index){
+         while(curIndex){
+         randomIndex = Math.floor(Math.random()*curIndex);
+         curIndex--;
+         temp = newArr[curIndex];
+         newArr[curIndex] = newArr[randomIndex];
+         newArr[randomIndex] = temp;
+        
+       }
+        
+       return newArr;
   };
 
 
@@ -428,6 +452,16 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
+  	     //assume it's array/obj
+  	     //check if functionOrKey is function or method(args)?
+  	     //.apply()-> functoin.apply(applied on) 
+       //  var arg = [].slice.call(arguments, 2);
+  	     var isFunc = (typeof functionOrKey === 'function');
+  	     return _.map(collection, function(item){
+  	     	return (isFunc ? functionOrKey.apply(item) : item[functionOrKey].apply(item, args));
+  	     });
+
+     
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -435,6 +469,31 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
+     //assume collection:[{name:'a',age:20},{name:'b',age:30}]; array
+     // value = iterator(item)
+     //sort valueList 
+     //return the new list with obj (but not value only)
+     //if iterator a function or 'key'
+     var isFunc = (typeof iterator === 'function');
+
+    /*
+     var valueList =_.map(collection, function(item, index){
+       if (typeof item ==='object'){
+          return iterator(item);
+       } else {
+       	if(isFunc){
+          return iterator(item);
+       	} else {
+          return item[iterator].apply(item);
+       	}
+       }
+     });
+*/   
+     for (var i = 0; i < collection.length; i++){
+    	var item = collection[i];
+        iterator(item);
+     }
+
   };
 
   // Zip together two or more arrays with elements of the same index
