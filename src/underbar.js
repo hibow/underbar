@@ -32,19 +32,19 @@
   // Return an array of the first n elements of an array. If n is undefined,
   // return just the first element.
   _.first = function(array, n) {
+    //if condition: n is undefined -> return array[0]; otherwiese, array.slice(0,n)
     return n === undefined ? array[0] : array.slice(0, n);
   };
 
   // Like first, but for the last elements. If n is undefined, return just the
   // last element.
   _.last = function(array, n) {
-  	if (n === 0){
-  		return [];
-  	} else if ( n !== undefined){
-  		return array.slice(-n,array.length);
-  	} else {
-  		return array[array.length-1];
-  	}
+  	// if condition: n is undefined -> return array[array.length -1]; otherwise; array.slice(- n, array.length) (if n > length)
+  	// if n === 0; return [] //
+  	if (n === 0) return [];
+  	else if (n === undefined) return array[array.length-1];
+  	else return array.slice(-n, array.length);
+
   };
 
   // Call iterator(value, key, collection) for each element of collection.
@@ -108,47 +108,39 @@
 
   // Produce a duplicate-free version of the array.
   _.uniq = function(array, isSorted, iterator) {
-  	//reduce the duplicate copy
-  	//1. if it's sorted or not
-  	//2. sorted -> push the unqiue value to result 
-  	//3. not sorted (no ordered) -> test object equality and only keep the first occurence of each value computed by iterator
-  	//4. array = [] return empty [] 5. if isSorted is not defined checkif iterator exists.
-  	var result = [];
-  	var uniqArr = [];
-  	if (!array.length){
-  		return result;
-  	} else if (typeof isSorted !== 'boolean'){
-  		iterator = isSorted;
-  		isSorted = false;
-  	}
+  	//reduce the duplicate copy f
+  	//return the unqiue elem in an array : var result = []; 
+    	// push iterator(item, index, array) into  transformed array -> if this value does not exists in it.(indexOf(array, target))
+    	// then push item to result -> return result;  
+  	// check arguements availability -> if isSorted is not undefined -> false/ no iterator 2. not boolean; it is iterator
+  	   // 3. is boolean but no iterator //4. else  
+  	//  array = [] return empty [] 
+  var result = [];
+  var transformed = [];
+  if (array.length=== 0) return result;
+  else if (isSorted === undefined) {
+  	isSorted = false;
+  } else if (typeof isSorted !== 'boolean'){
+  	iterator = isSorted;
+  	isSorted = false;
+  } 
+  if (iterator === undefined){
+  	  _.each(array, function(item, index){
+  	     if (_.indexOf(result, item) === -1 ) {
+  	     	result.push(item);
+  	     }	
+  	  })
+  } else {
   	_.each(array, function(item, index){
-  		if (iterator === undefined){
-  			if (_.indexOf(result, item) < 0){
-  				result.push(item);
-  			}
-  		} else {
-  			var computed = iterator(item, index, array);
-  			if (_.indexOf(uniqArr, computed) < 0){
-  				uniqArr.push(computed);
-  				result.push(item);
-  			}
+  		var computed = iterator(item, index, array);
+  		if (_.indexOf(transformed, computed) === -1){
+  			 transformed.push(computed);
+  			 result.push(item);
   		}
-  	});
-  /*    for (var i = 0; i < array.length; i ++){
-      	var value = array[i];
-      	if (!iterator){
-      		if (_.indexOf(result, value) < 0){
-      			result.push(value);
-      		}
-        } else if (iterator){
-        	var computed = iterator(value, i , array);
-        	if (_.indexOf(uniqArr, computed) < 0){
-        		uniqArr.push(computed);
-        		result.push(value);
-        	}
-        }
-     } */
-       return result;
+  	})
+  }
+  	   return result;
+
   };
 
 
@@ -203,83 +195,79 @@
   //   }); // should be 5, regardless of the iterator function passed in
   //          No accumulator is given so the first element is used.
   _.reduce = function(collection, iterator, accumulator) {
-    //if no acc -> if arg1 not exist or arg2 not exists...
-    // with acc -> run thru iterator
-    var result = 0;
-    _.each(collection, function(item, index){
-  //       item = collection[index];
-//      var keyArr = Object.keys(collection);
-    	if (accumulator !== undefined){
-           accumulator = iterator(accumulator, item);
-           result = accumulator;
-    	} else { 
-            accumulator = item;
-            item = collection[index+1];
-            result = iterator(accumulator, item);
-     	}
-     });
-      return result;
-  };
+    //collection -> array 
+        //iterator(acc, value, index(key), collection)
+           //accumlator is undefined -> acc = collection[0] ; collection = collection.slice(1); else -> return iterator()
+    //collection -> obj
+        // iterator
+          //acc is undefined -> acc = collection[firstkey]; delete collection[firstkey]; else -> return iterator()
+
+   if (Array.isArray(collection)){
+     if (accumulator === undefined){
+     	accumulator = collection[0];
+     	collection = collection.slice(1);
+     } 
+     	_.each(collection, function(item, index){
+     	   accumulator = iterator(accumulator, item, index, collection);
+     	})
+     
+   } else if (typeof collection === 'object'){
+        if (accumulator === undefined){
+            var keysArr = Object.keys(collection);
+        	accumulator = collection[keysArr[0]];
+        	delete collection[keysArr[0]];
+        }
+        _.each(collection, function(value, key){
+        	accumulator = iterator(accumulator, value, key, collection);
+        })
+     }
+   return accumulator;
+ };
+
 
   // Determine if the array or object contains a given value (using `===`).
   _.contains = function(collection, target) {
     // TIP: Many iteration problems can be most easily expressed in
     // terms of reduce(). Here's a freebie to demonstrate!
-    return _.reduce(collection, function(wasFound, item) {
-      if (wasFound) {
-        return true;
-      }
-      return item === target;
-    }, false);
+     //return boolean ; starting value = false; (if none exist || false -> false)
+       //check each elem if elem === target ; acc || this condition (as long it contains once it will return true)
+
+    return _.reduce(collection, function(acc, item){
+        return acc || (item === target) ;
+    }, false)
   };
 
 
   // Determine whether all of the elements match a truth test.
   _.every = function(collection, iterator) {
     // TIP: Try re-using reduce() here.
-    //if collectoin is empty length = 0 -> return defalut yes
-    var wasMatched = true;
-    var hasCallBack = true;
-    if (Object.keys(collection).length === 0){
-    	return wasMatched;
-    } else if (!arguments[1]){
-    	hasCallBack = false;
-    } 
-    //var count = 0;
-    return _.reduce(collection, function(AllMatched, item){
-    	if (!hasCallBack){
-    		return !!item && AllMatched;
-    	} else {
-  
-    		return !!iterator(item) && AllMatched;
-    	}
-    }, true);
+      //return boolean (start = true && condition(coerce to boolean value) -> if one fails -> return false)
+       //if iterator is undefined -> (start = true && item(coerce to boolean value)
+    
+    return _.reduce(collection, function(acc, item){
 
+
+        return iterator === undefined? acc && !!item : acc && !!iterator(item);
+    }, true)
   };
 
   // Determine whether any of the elements pass a truth test. If no iterator is
   // provided, provide a default one
   _.some = function(collection, iterator) {
-    // TIP: There's a very clever way to re-use every() here.
-    //assume = no arg[1] return default true/empty collection -> return false;
-    // if _.every === true -> return true; -> in every if true-> stay until finish; break if false-> let it break !true -> return ! (!true) -> true
-    //if _.every === false -> if all false-> false;  always !false -> so stay until the end. and return !(!false)-> false
-    //if one false -> return true; stay when ! false ; break when ! true -> return !(!true) -> true
-
-    var wasMatched = false;
-    var hasCallBack = true;
-    if (Object.keys(collection).length === 0){
-    	return wasMatched;
-    } else if (!arguments[1]){
-    	hasCallBack = false;
-    } 
-    return !_.every(collection, function(item){
-    	if (!hasCallBack){
-    		return !item;
-    	} else {
-          return !iterator(item);
-    	}
-    });
+    // TIP: There's a very clever way to re-use every() here. 
+    //return boolean value ; start= false(if all are false) || iterator (item) or item (coerce it into boolean value)   
+      //reduce or every
+   //reduce
+   /*
+   return _.reduce(collection, function(acc, item){
+      return iterator === undefined ? (acc || !!item) : (acc || !!iterator(item));
+   }, false)
+  */
+   //every -> true -> return true; false -> if iterator(item) or item is true -> !(return) should be true; if all false -> should be false;
+     // !(!1 && !1) = 1 ; !(!0 && !0) = 0; !(!1 && !0)= 1; !(!0 && !1) = 1 
+   return !_.every(collection, function(item){
+   	return iterator === undefined? !item : !iterator(item);
+   })
   };
 
 
@@ -302,36 +290,34 @@
   //     bla: "even more stuff"
   //   }); // obj1 now contains key1, key2, key3 and bla
   _.extend = function(obj) {
-      //merge other stuff into obj
-      //arg[1] and after are obj to be merged into the arg[0]
-        if (arguments.length < 2){
-      	return obj;
-      } else if (arguments.length >=2){
-      	for (var i = 1; i< arguments.length; i++ ){
-      		var source = arguments[i];
-      		Object.assign(obj, source);
-      	}
-      	return obj;
-      }
+      //merge other stuff into obj -> return obj 
+      //how to add new obj into obj -> Object.assign(target, source)-> return target
+        //collection -> push arg[1] to arg[n] into collection 
+            //how to use slice method for arguements? var collection = [].slice.call(arguments,1);
+        //reduce -> start : obj, Object.assign(obj, item)    
+     return _.reduce(arguments, function(acc,item){
+        return Object.assign(acc,item);
+     },obj)
+
   };
 
   // Like extend, but doesn't ever overwrite a key that already
   // exists in obj
   _.defaults = function(obj) {
   	//it won't overwrite existing property
-  	 if (arguments.length < 2){
-      	return obj;
-      } else if (arguments.length >=2){
-      	for (var i = 1; i< arguments.length; i++ ){
-      		var source = arguments[i];
-      		for (var key in source){
-      			if (source.hasOwnProperty(key) && !obj.hasOwnProperty(key)){
-                    obj[key] = source[key];
-      			}
-      		}
-      	}
-      	return obj;
-      }
+     //return obj 
+       //collection -> [obj, obj1, obj2]
+       //reduce : each item -> obj; each: iterate thru its key and check with acc's key if not the same -> acc[key] = item[key];
+         //where to get key-> iterate thru the "item"
+     return _.reduce(arguments, function(acc,item){
+        _.each(item, function(value, key){
+        	if (!acc.hasOwnProperty(key)) {
+        		acc[key] = item[key];
+        	}
+        })
+        return acc;
+     },obj)
+
   };
 
 
@@ -403,11 +389,11 @@
   // parameter. For example _.delay(someFunction, 500, 'a', 'b') will
   // call someFunction('a', 'b') after 500ms
   _.delay = function(func, wait) {
-     //how to wait? 
-     //what is the arguments? arguments -> pass it to func and apply 
-     //return func() setTimeout()
-     return setTimeout.apply(this, arguments);
-
+     //wait -> is number -> setTimeout(func, wait(ms));
+     //return func -> pass arguments to func and apply func.apply(this, arguments);
+     
+      return setTimeout.apply(this, arguments);
+   
   };
 
 
@@ -422,22 +408,20 @@
   // input array. For a tip on how to make a copy of an array, see:
   // http://mdn.io/Array.prototype.slice
   _.shuffle = function(array) {
-
-    	var newArr = array.slice();
-        var curIndex = array.length;
-        var randomIndex;
-        var temp;
-       // _.each(array, function(item, index){
-         while(curIndex){
-         randomIndex = Math.floor(Math.random()*curIndex);
-         curIndex--;
-         temp = newArr[curIndex];
-         newArr[curIndex] = newArr[randomIndex];
-         newArr[randomIndex] = temp;
-        
-       }
-        
-       return newArr;
+     //make a new array copy -> array.slice();
+     //how to rearrange the order in array -> re assign index for each item (get random one from n -> exchange the item & n--)
+       //get random index (0-n); randomIndex = Math.floor(Math.random() * (max - min)) + min; range (min, max) max is excluded
+       //exchange item : temp = arr[n] ; arr[n] = arr[r] ; arr[x] = temp, n-- 
+       // reduce : start = newArr, exchange item -> return acc
+     var newArr = array.slice();
+     var max = array.length;
+      return _.reduce(newArr, function(acc,item,index){
+          var randomIndex = Math.floor(Math.random() * (max - index)) + index;
+          var temp = acc[index];
+          acc[index] = acc[randomIndex];
+          acc[randomIndex] = temp;
+          return acc;
+      },newArr)
   };
 
 
@@ -452,16 +436,16 @@
   // Calls the method named by functionOrKey on each value in the list.
   // Note: You will need to learn a bit about .apply to complete this.
   _.invoke = function(collection, functionOrKey, args) {
-  	     //assume it's array/obj
-  	     //check if functionOrKey is function or method(args)?
-  	     //.apply()-> functoin.apply(applied on) 
-       //  var arg = [].slice.call(arguments, 2);
-  	     var isFunc = (typeof functionOrKey === 'function');
-  	     return _.map(collection, function(item){
-  	     	return (isFunc ? functionOrKey.apply(item) : item[functionOrKey].apply(item, args));
-  	     });
+  	    //return the transformed values in a list -> map
 
-     
+  	    //check if functionOrKey is function or method(args)
+           //if it's not function-> method -> get function (propertyvalue) from item[method](method is its key)
+  	       //.apply()-> functoin.apply(item, arguments) 
+       var arg = [].slice.call(arguments, 2);
+       return _.map(collection, function(item){
+       	return typeof functionOrKey === 'function'? functionOrKey.apply(item, arg) : item[functionOrKey].apply(item,arg);
+       })
+
   };
 
   // Sort the object's values by a criterion produced by an iterator.
@@ -469,30 +453,30 @@
   // of that string. For example, _.sortBy(people, 'name') should sort
   // an array of people by their name.
   _.sortBy = function(collection, iterator) {
-     //assume collection:[{name:'a',age:20},{name:'b',age:30}]; array
-     // value = iterator(item)
-     //sort valueList 
-     //return the new list with obj (but not value only)
-     //if iterator a function or 'key'
-     var isFunc = (typeof iterator === 'function');
+    //collection is an array people = [{personA},{personB}] -> return a new list(array)
+      //sort by - iterator(item) or item[iterator] 
+        //iterator is string -> iterator = key -> value = item[iterator]
+        //list.sort( function(a,b){return a.value-b.value}) ->by number
+        //list.sort( functoin(a,b){ var valueA = a[key].toUpperCase(); valueB ; if (valueA < valueB) return -1; if (valueA> valueB) return 1; return 0})
+    var isMethod = typeof iterator === 'string';
+    if (isMethod) {
+    	return collection.sort(function(a,b){
+                 var A = a[iterator]
+                 var B = b[iterator];
+                  if (A < B) return -1;
+                  if (A > B) return 1;
+                  return 0;
+      })
+    } else {
+    	return collection.sort( function(a,b){
+    		var A = iterator(a);
+    		var B = iterator(b);
+    		      if (A < B) return -1;
+                  if (A > B) return 1;
+                  return 0;
 
-    /*
-     var valueList =_.map(collection, function(item, index){
-       if (typeof item ==='object'){
-          return iterator(item);
-       } else {
-       	if(isFunc){
-          return iterator(item);
-       	} else {
-          return item[iterator].apply(item);
-       	}
-       }
-     });
-*/   
-     for (var i = 0; i < collection.length; i++){
-    	var item = collection[i];
-        iterator(item);
-     }
+    	})
+    }
 
   };
 
@@ -502,6 +486,23 @@
   // Example:
   // _.zip(['a','b','c','d'], [1,2,3]) returns [['a',1], ['b',2], ['c',3], ['d',undefined]]
   _.zip = function() {
+    //return new list of [item1[i],..,itemN[i]] -> new array
+    //arguments (array of item1 to item N) -> each item has M elements
+     //how many new items -> max length of item(M); how many new elem in each item -> arguments.length (N)
+       //return: [arguments[0][0]-[arguments[N,0]],[arg[0][1],arg[N][1]],[arg[0,2],arg[N,2]]...[arg[0,M],arg[N,M]]]
+       //for loop
+      var result = [];
+      var pair = [];
+       for (var n = 0; n < arguments.length; n++){
+       	var item = arguments[i];
+       	for (var m = 0; m < item.length; m++) {
+          
+       	}
+     }
+
+    
+
+
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
