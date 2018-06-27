@@ -490,19 +490,20 @@
     //arguments (array of item1 to item N) -> each item has M elements
      //how many new items -> max length of item(M); how many new elem in each item -> arguments.length (N)
        //return: [arguments[0][0]-[arguments[N,0]],[arg[0][1],arg[N][1]],[arg[0,2],arg[N,2]]...[arg[0,M],arg[N,M]]]
-       //for loop
-      var result = [];
-      var pair = [];
-       for (var n = 0; n < arguments.length; n++){
-       	var item = arguments[i];
-       	for (var m = 0; m < item.length; m++) {
-          
-       	}
-     }
-
-    
-
-
+       //for loop : outer loop M -> inner loop N 
+      //M -> reduce: start = 0; return item.length > acc ? item.length : acc ;
+    var result = [];
+      var maxLen = _.reduce(arguments, function(acc, item){
+       return item.length > acc ? item.length: acc;
+    },0);
+    for (var m = 0; m < maxLen; m++){
+       var pair = [];
+      for (var n = 0; n < arguments.length; n ++){
+         pair.push(arguments[n][m]);
+      }
+      result.push(pair);
+    }
+    return result;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -510,11 +511,51 @@
   //
   // Hint: Use Array.isArray to check if something is an array
   _.flatten = function(nestedArray, result) {
+     //return a new array 
+      //nestedArray [ [ []]...] -> elem might be obj or array? 
+      //result? 
+       //check each item if it's array or not -> return push into acc;
+        //if it's an array -> enter another reduce -> start: acc; push item into acc?
+        //if it's not an array -> push inot acc
+      
+    return _.reduce(nestedArray, function iterator(acc, item){
+      if (!Array.isArray(item)) return acc.concat(item);
+      else {
+        /* //make it a recursive function 
+        _.reduce(item, function(acc, elem){
+          return
+          //repeat steps..to check array or not
+        },acc)
+        */
+       return _.reduce(item,iterator,acc);
+      }
+    }, [])
+
   };
 
   // Takes an arbitrary number of arrays and produces an array that contains
   // every item shared between all the passed-in arrays.
   _.intersection = function() {
+    //inputs: arguments = [[],[]..] array of a number of arrays..
+    //return : a new array -> contains the same elem from all the items 
+      //argument.length = M; item.length = N
+     //check each elem of each array -> recusive function 
+     //arg[0[0] ->arg[1][0]-arg[1][n]-> false -> arg[0][1] the same ->if ture -> return true;
+     //->arg[m][0]-arg[m][h] -> if true; use acc to compare next item[0-L]; 
+     //acc = arg[0][0] - arg[0][h] if false-> change acc ; if (acc === item[0]) return acc else { if(acc === item[L]) }
+     var comparedArr = arguments[0];
+     var args = [].slice.call(arguments, 1);
+     var index = 0;
+     return _.reduce(args, function iterator(acc,item){
+           _.each(item, function (elem){
+             if (acc === elem){
+                return acc; 
+             }      
+          })
+          index ++;
+          return _.reduce(args, iterator,acc);    
+    },comparedArr[index])   
+      
   };
 
   // Take the difference between one array and a number of other arrays.
