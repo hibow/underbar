@@ -492,18 +492,21 @@
        //return: [arguments[0][0]-[arguments[N,0]],[arg[0][1],arg[N][1]],[arg[0,2],arg[N,2]]...[arg[0,M],arg[N,M]]]
        //for loop : outer loop M -> inner loop N 
       //M -> reduce: start = 0; return item.length > acc ? item.length : acc ;
-    var result = [];
       var maxLen = _.reduce(arguments, function(acc, item){
        return item.length > acc ? item.length: acc;
-    },0);
+    },0);    
+      var zipped = [];
     for (var m = 0; m < maxLen; m++){
-       var pair = [];
+      zipped[m] = _.pluck(arguments, m);
+      /* // _.pluck -> arguments -> item[m] push into zipped[m]
       for (var n = 0; n < arguments.length; n ++){
          pair.push(arguments[n][m]);
       }
       result.push(pair);
     }
-    return result;
+    */
+    }
+    return zipped;
   };
 
   // Takes a multidimensional array and converts it to a one-dimensional array.
@@ -538,29 +541,30 @@
   _.intersection = function() {
     //inputs: arguments = [[],[]..] array of a number of arrays..
     //return : a new array -> contains the same elem from all the items 
-      //argument.length = M; item.length = N
-     //check each elem of each array -> recusive function 
-     //arg[0[0] ->arg[1][0]-arg[1][n]-> false -> arg[0][1] the same ->if ture -> return true;
-     //->arg[m][0]-arg[m][h] -> if true; use acc to compare next item[0-L]; 
-     //acc = arg[0][0] - arg[0][h] if false-> change acc ; if (acc === item[0]) return acc else { if(acc === item[L]) }
-     var comparedArr = arguments[0];
-     var args = [].slice.call(arguments, 1);
-     var index = 0;
-     return _.reduce(args, function iterator(acc,item){
-           _.each(item, function (elem){
-             if (acc === elem){
-                return acc; 
-             }      
-          })
-          index ++;
-          return _.reduce(args, iterator,acc);    
-    },comparedArr[index])   
-      
+        //use the elem of first array to check if other arrays contains the same elem
+         //each item (of the array) is included by other arrays? return -> [item]-> filter
+           //how to represent other array? -> put a each functon insdie 
+    var args = [].slice.call(arguments,1);
+    return _.filter(arguments[0], function(item){
+        //check if argument[1]-[n] all includes item
+        return _.every(args, function(arr){
+        	return arr.includes(item);
+        })
+    }) 
   };
 
   // Take the difference between one array and a number of other arrays.
   // Only the elements present in just the first array will remain.
   _.difference = function(array) {
+  	//use 1st array to compare the rest; keep the elem which is not included in any of array (use every)
+    //return array -> filter 
+      var otherArr = [].slice.call(arguments,1);
+      return _.filter(arguments[0], function(item){
+         return _.every(otherArr,function(arr){
+         	return !(arr.includes(item));
+         	//or _.indexOf(arr, item) === -1 
+         })	
+      })
   };
 
   // Returns a function, that, when invoked, will only be triggered at most once
@@ -569,5 +573,16 @@
   //
   // Note: This is difficult! It may take a while to implement.
   _.throttle = function(func, wait) {
+
+      var isWaiting = false;
+     return function(){
+      if (!isWaiting){
+      func.apply(this, arguments);
+      isWaiting = true;
+      setTimeout( function(){
+      	isWaiting = false } , wait);
+       }
+      } 
   };
+
 }());
